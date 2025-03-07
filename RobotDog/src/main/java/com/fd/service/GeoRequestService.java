@@ -5,11 +5,13 @@ import com.fd.util.ResponseResult;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface GeoRequestService {
-    ResponseResult upload(GeoRequest geoRequest, MultipartFile file);
+    ResponseResult upload(GeoRequest geoRequest, String file);
 
     ResponseResult get();
 
     ResponseResult getL(String workspace);
 
     ResponseResult getWmsInfo(String workspace, String layername);
+
+    ResponseResult postFile(MultipartFile file);
 }

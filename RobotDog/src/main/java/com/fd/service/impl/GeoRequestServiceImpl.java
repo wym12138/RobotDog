@@ -16,7 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,23 +40,26 @@ public class GeoRequestServiceImpl implements GeoRequestService {
 
 
     @Override
-    public ResponseResult upload(GeoRequest geoRequest, MultipartFile file) {
+    public ResponseResult upload(GeoRequest geoRequest, String file) {
             try {
 
                 //0.判断文件类型并判断是否为空
-                String name = file.getOriginalFilename();
-                if (name == null) {
-                    return ResponseResult.okResult(400, "文件名不能为空");
-                }
+//                String name = file.getOriginalFilename();
+//                if (name == null) {
+//                    return ResponseResult.okResult(400, "文件名不能为空");
+//                }
+//
+//                String[] split = name.split("\\.");
+//                if (split.length == 0) {
+//                    return ResponseResult.okResult(400, "文件名格式错误");
+//                }
 
-                String[] split = name.split("\\.");
-                if (split.length == 0) {
-                    return ResponseResult.okResult(400, "文件名格式错误");
-                }
-
-                String extension = split[split.length - 1];
-                if (!extension.equalsIgnoreCase("tif") && !extension.equalsIgnoreCase("tiff")) {
-                    return ResponseResult.okResult(400, "文件类型上传错误，仅支持 tif 或 tiff 格式");
+//                String extension = split[split.length - 1];
+//                if (!extension.equalsIgnoreCase("tif") && !extension.equalsIgnoreCase("tiff")) {
+//                    return ResponseResult.okResult(400, "文件类型上传错误，仅支持 tif 或 tiff 格式");
+//                }
+                if (file==null){
+                    return ResponseResult.okResult(400,"url不得为空");
                 }
                 if (geoRequest.getStorename()==null){
                     return ResponseResult.okResult(400,"数据源名称不得为空");
@@ -120,11 +127,11 @@ public class GeoRequestServiceImpl implements GeoRequestService {
 
                 //  4、发布图层服务
                     // 将 MultipartFile 转换为临时文件
-                File tempFile = File.createTempFile("geotiff-", ".tif");
-                file.transferTo(tempFile);
+                //File tempFile = File.createTempFile("geotiff-", ".tif");
+                //file.transferTo(tempFile);
                     //redis
                 redisCache.deleteObject(workspace+"layername");
-                boolean b = publisher.publishGeoTIFF(workspace , storename , layerName , tempFile);
+                boolean b = publisher.publishGeoTIFF(workspace , storename , layerName , new File(file));
                 if(!b){
                     System.out.println("geotiff图层服务发布失败");
                     return ResponseResult.okResult(400,"geotiff图层服务发布失败");
@@ -215,5 +222,50 @@ public class GeoRequestServiceImpl implements GeoRequestService {
         wmsInfo.put("bbox", "minx,miny,maxx,maxy"); // 默认地图范围
         wmsInfo.put("format", "image/png");
         return new ResponseResult<>(200,"获取成功",wmsInfo);
+    }
+
+    private final String uploadDir="/var/www/uploads/feidian/";
+    @Override
+    public ResponseResult postFile(MultipartFile file) {
+        //0.判断文件类型并判断是否为空//////
+                if (file.isEmpty()){
+                    return ResponseResult.okResult(400,"请上传文件");
+                }
+                String name = file.getOriginalFilename();
+                if (name == null) {
+                    return ResponseResult.okResult(400, "文件名不能为空");
+                }
+////////
+                String[] split = name.split("\\.");
+                if (split.length == 0) {
+                    return ResponseResult.okResult(400, "文件名格式错误");
+                }
+
+                String extension = split[split.length - 1];
+                if (!extension.equalsIgnoreCase("tif") && !extension.equalsIgnoreCase("tiff")) {
+                    return ResponseResult.okResult(400, "文件类型上传错误，仅支持 tif 或 tiff 格式");
+                }
+
+
+        Path filePath;
+                try {
+                    //1.存入服务器url中
+                    //创建存储目录
+                    File uploadPath = new File(uploadDir);
+                    if (!uploadPath.exists()) {
+                        uploadPath.mkdirs();
+                    }
+
+                    //保存文件
+                    filePath = Paths.get(uploadDir, name);
+                    Files.copy(file.getInputStream(), filePath);////////////////////////
+                }catch (IOException e){
+                    return ResponseResult.okResult(400,"文件上传失败");
+                }
+
+        String uri = filePath.toString();
+
+
+        return new ResponseResult(200,"储存成功",uri);
     }
 }
