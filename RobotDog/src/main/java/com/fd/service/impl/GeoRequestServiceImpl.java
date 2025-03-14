@@ -21,10 +21,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 //TODO 修改注册服务中的上传
@@ -33,7 +30,7 @@ public class GeoRequestServiceImpl implements GeoRequestService {
     @Autowired
     private RedisCache redisCache;
 
-    private String url = "http://127.0.0.1:8080/geoserver";    //geoserver的地址
+    private String url = "http://202.140.140.215:9999/geoserver";    //geoserver的地址
     private String un = "admin";         //geoserver的账号
     private String pw = "geoserver";     //geoserver的密码
 
@@ -106,7 +103,7 @@ public class GeoRequestServiceImpl implements GeoRequestService {
                     }
                 }
                         // 等待 2 秒，确保工作区初始化完成
-                Thread.sleep(2000);
+                Thread.sleep(5000);
 
                 // 3. 创建数据源，有则报错
                 RESTDataStore datastore = reader.getDatastore(workspace, storename);
@@ -122,16 +119,21 @@ public class GeoRequestServiceImpl implements GeoRequestService {
                     return ResponseResult.okResult(400,"数据源名称重复");
                 }
                         // 等待 2 秒，确保工作区初始化完成
-                Thread.sleep(2000);
+                Thread.sleep(5000);
 
 
                 //  4、发布图层服务
                     // 将 MultipartFile 转换为临时文件
                 //File tempFile = File.createTempFile("geotiff-", ".tif");
                 //file.transferTo(tempFile);
-                    //redis
+                File geoTiffFile = new File(file); // 假设 'file' 是服务器的文件路径
+                if (!geoTiffFile.exists()) {
+                    return ResponseResult.okResult(400, "文件不存在");
+                }
+
+                //redis
                 redisCache.deleteObject(workspace+"layername");
-                boolean b = publisher.publishGeoTIFF(workspace , storename , layerName , new File(file));
+                boolean b = publisher.publishGeoTIFF(workspace , storename , layerName , geoTiffFile);
                 if(!b){
                     System.out.println("geotiff图层服务发布失败");
                     return ResponseResult.okResult(400,"geotiff图层服务发布失败");
@@ -213,18 +215,10 @@ public class GeoRequestServiceImpl implements GeoRequestService {
         return new ResponseResult<>(200,"获取成功",names);
     }
 
-    @Override
-    public ResponseResult getWmsInfo(String workspace, String layername) {
-        Map<String, String> wmsInfo = new HashMap<>();
-        wmsInfo.put("wmsUrl", "http://127.0.0.1:8080/geoserver/"+workspace+"/wms");
-        wmsInfo.put("layerName", workspace+":"+layername);
-        wmsInfo.put("srs", "EPSG:4326");
-        wmsInfo.put("bbox", "minx,miny,maxx,maxy"); // 默认地图范围
-        wmsInfo.put("format", "image/png");
-        return new ResponseResult<>(200,"获取成功",wmsInfo);
-    }
+
 
     private final String uploadDir="/var/www/uploads/feidian/";
+    private final String uploadDir2="D:\\feidianText";
     @Override
     public ResponseResult postFile(MultipartFile file) {
         //0.判断文件类型并判断是否为空//////
@@ -235,7 +229,7 @@ public class GeoRequestServiceImpl implements GeoRequestService {
                 if (name == null) {
                     return ResponseResult.okResult(400, "文件名不能为空");
                 }
-////////
+
                 String[] split = name.split("\\.");
                 if (split.length == 0) {
                     return ResponseResult.okResult(400, "文件名格式错误");
@@ -245,6 +239,7 @@ public class GeoRequestServiceImpl implements GeoRequestService {
                 if (!extension.equalsIgnoreCase("tif") && !extension.equalsIgnoreCase("tiff")) {
                     return ResponseResult.okResult(400, "文件类型上传错误，仅支持 tif 或 tiff 格式");
                 }
+                name=UUID.randomUUID().toString()+name;
 
 
         Path filePath;
@@ -263,8 +258,7 @@ public class GeoRequestServiceImpl implements GeoRequestService {
                     return ResponseResult.okResult(400,"文件上传失败");
                 }
 
-        String uri = filePath.toString();
-
+        String uri = uploadDir + name;
 
         return new ResponseResult(200,"储存成功",uri);
     }

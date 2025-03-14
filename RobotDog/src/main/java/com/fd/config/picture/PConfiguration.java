@@ -9,14 +9,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 public class PConfiguration implements WebMvcConfigurer {
 
-    // 为服务器文件存储的绝对路径
+    // 为服务器文件存储的绝对路径x
     private String uploadPathing = "/var/www/uploads/feidian/";
     // 您在部署到宝塔试一下
  // 可以了 亲
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 映射 /geoserver/postFile方法 到文件目录 /var/www/uploads/feidian/
-        registry.addResourceHandler("/geoserver/postFile")
+        registry.addResourceHandler("/geoserver/postFile/**")
                 .addResourceLocations("file:" + uploadPathing);
     }
 }

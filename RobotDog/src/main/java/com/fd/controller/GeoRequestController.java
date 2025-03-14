@@ -18,7 +18,7 @@ public class GeoRequestController {
 
 
     @GetMapping("/upload")
-    public ResponseResult upload(@RequestParam String workspace,@RequestParam String file,@RequestParam String storename,@RequestParam String layerName){
+    public ResponseResult upload(@RequestParam(required = true) String workspace,@RequestParam(required = true) String file,@RequestParam(required = true) String storename,@RequestParam(required = true) String layerName){
         GeoRequest geoRequest=new GeoRequest(workspace,storename,layerName);
         return geoRequestService.upload(geoRequest,file);
     }
@@ -29,13 +29,9 @@ public class GeoRequestController {
     }
 
     @GetMapping("/getLayername")
-    public ResponseResult getL(@RequestParam String workspace){return geoRequestService.getL(workspace);}
+    public ResponseResult getL(@RequestParam(required = true) String workspace){return geoRequestService.getL(workspace);}
 
 
-    @GetMapping("/wms")
-    public ResponseResult getWmsInfo(@RequestParam String workspace,@RequestParam String layername){
-        return geoRequestService.getWmsInfo(workspace,layername);
-    }
 
     @PostMapping("/postFile")
     public ResponseResult postFile(@RequestParam MultipartFile file){

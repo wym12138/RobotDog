@@ -11,7 +11,7 @@ public interface GeoRequestService {
 
     ResponseResult getL(String workspace);
 
-    ResponseResult getWmsInfo(String workspace, String layername);
+
 
     ResponseResult postFile(MultipartFile file);
 }
