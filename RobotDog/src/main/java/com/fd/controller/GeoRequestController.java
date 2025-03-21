@@ -39,6 +39,10 @@ public class GeoRequestController {
     }
 
 
+    @GetMapping("/getXY")
+    public ResponseResult getXY(@RequestParam String name){
+        return geoRequestService.getXY(name);
+    }
 
 
 

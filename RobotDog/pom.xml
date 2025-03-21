@@ -16,10 +16,19 @@
   <dependencies>
     <!--geoserver依赖-->
     <dependency>
+      <groupId>it.geosolutions</groupId>
+      <artifactId>geoserver-manager</artifactId>
+      <version>1.7.0</version>
+    </dependency>
+    <!--geoserver依赖-->
+    <dependency>
       <groupId>nl.pdok</groupId>
       <artifactId>geoserver-manager</artifactId>
       <version>1.7.0-pdok2</version>
     </dependency>
+
+
+
 
     <!--mysql数据库驱动-->
     <dependency>
@@ -74,6 +83,26 @@
       <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>osgeo</id>
+      <url>https://download.osgeo.org/webdav/geotools/</url>
+    </repository>
+    <repository>
+      <id>boundlessgeo</id>
+      <url>http://repo.boundlessgeo.com/main</url>
+    </repository>
+    <repository>
+      <id>geosolutions</id>
+      <url>https://maven.geo-solutions.it</url>
+    </repository>
+    <repository>
+      <id>GeoSolutions</id>
+      <url>http://maven.geo-solutions.it/</url>
+    </repository>
+  </repositories>
+
   <build>
     <plugins>
       <!-- Spring Boot Maven Plugin -->

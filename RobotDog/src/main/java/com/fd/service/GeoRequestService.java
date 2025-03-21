@@ -14,4 +14,7 @@ public interface GeoRequestService {
 
 
     ResponseResult postFile(MultipartFile file);
+
+    ResponseResult getXY(String name);
+
 }
